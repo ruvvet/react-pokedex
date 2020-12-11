@@ -5,22 +5,43 @@ function Pokedex() {
   const [pokeName, setPokeName] = useState('Pikachu');
   const [pokemon, setPokemon] = useState();
 
-  useEffect(async () => {
+  useEffect(
+    () => {
+      const loadPokemon = async () => {
+        const poke = await Axios.get(
+          `https://pokeapi.co/api/v2/pokemon/${pokeName}`
+        ).catch(() => null);
 
-if (!pokeName){
-    return
-}
+        if (poke) {
+          setPokemon(poke);
+        }
+      };
 
+      loadPokemon();
+      // use effect cant be async + the primary function you pass into use effect cant be async
+      // use effect is called on every frame
+      // the dependency list is the 2nd parameter of use effect
+    },
+    [pokeName] // this is the dependency list, useeffect is only called if things inside this array change
+    // use effec w/ empty dependency arr will only run once
+  );
 
-    const poke = await Axios.get(
-      `https://pokeapi.co/api/v2/pokemon/${pokeName}`
+  // return from a use effect is a 'cleanup'
+  // anything returned from a useeffect = function
+  // this function is called 'once' before the next use effect loop
+  //  - make use effect return a cancel
+
+  const renderPokemon = () => {
+    if (!pokemon) {
+      return null;
+    }
+    return (
+      <div>
+        <div>{pokemon.data.name}</div>
+        <div>{pokemon.data.id}</div>
+      </div>
     );
-
-    console.log(poke.data.sprites.front_default)
-    console.log(poke.data.sprites.front_default);
-    // pass this through as a props to a component?
-    setPokemon(poke);
-  });
+  };
 
   return (
     <div>
@@ -29,7 +50,7 @@ if (!pokeName){
         value={pokeName}
         onChange={(e) => setPokeName(e.target.value.toLowerCase())}
       />
-    <div>{pokemon.data.name}</div>
+      {renderPokemon()}
     </div>
   );
 }
